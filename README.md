@@ -2,7 +2,8 @@
 
 ## Overview
 
-This technical assessment, as part of the recruitment process for the Data Scientist Position at Miva Open University analyzes Learning Management System (LMS) video engagement data is designed to evaluate abilities across key data science domains such as exploratory data analysis, predictive modeling, engagement metrics, clustering, and more.
+This technical assessment, as part of the recruitment process for the Data Scientist Position at Miva Open University analyzes Learning Management System (LMS) video engagement data to derive insights into learner behavior, identify areas for improvement, and build predictive models. It is designed to evaluate abilities across key data science domains such as exploratory data analysis, predictive modeling, engagement metrics, clustering, and more.
+
 
 The technical assessment analysis covers:
 1.  **EDA:** Loading data, calculating video engagement stats (mean/median completion), and visualizing top videos.
@@ -50,9 +51,35 @@ The technical assessment analysis covers:
 *   `src/`: Contains the main Jupyter Notebook which I used to run the analysis.
 *   `utils/`: Contains helper Python modules, broken down by task, to keep the notebook clean and code reusable.
 
+## Setup and Installation
+
+1.  **Prerequisites:**
+    *   Python (version 3.9 or higher recommended)
+    *   `pip` (Python package installer)
+2.  **Clone Repository:**
+    ```bash
+    git clone https://github.com/Abdulraqib20/miva-open-university-data-scientist-technical-assessment
+    cd miva-open-university-data-scientist-technical-assessment
+    ```
+3.  **Create Virtual Environment (Recommended):**
+    ```bash
+    python -m venv venv
+    # Activate the environment
+    # Windows:
+    venv\Scripts\activate
+    # macOS/Linux:
+    source venv/bin/activate
+    ```
+4.  **Install Dependencies:**
+    *   **For the main analysis notebook:**
+        ```bash
+        pip install -r requirements.txt
+        ```
+5.  **Add Data:** Place the `LMS Video Engagement Data.csv` file into the `data/` directory.
+
 ## Running the Notebook
 
-1.  **Launch Jupyter:**
+1.  **Launch Jupyter:** Ensure the virtual environment is active and run:
     ```bash
     jupyter notebook
     ```
@@ -61,6 +88,56 @@ The technical assessment analysis covers:
     *   The notebook uses `autoreload` to automatically pick up changes made in the `utils/` scripts without restarting the kernel (after the initial import).
     *   Outputs, including tables, statistics, and interactive Plotly visualizations, will be displayed directly in the notebook.
     *   Some static plots are saved as image files in the `output/` directory.
+
+## Running the Prediction API
+
+1.  **Train the Model:** Ensure you have run the relevant cells in `src/assessment.ipynb` to execute `utils/prediction.py`, which trains the model and saves the necessary files (`completion_predictor.pkl`, etc.) into the `api/models/` directory.
+2.  **Navigate to API Directory:** Open a new terminal (with the virtual environment activated):
+    ```bash
+    cd api
+    ```
+3.  **Run the Flask App:**
+    ```bash
+    python app.py
+    ```
+    The API will start, usually on `http://localhost:5000` or `http://127.0.0.1:5000`. It will indicate if the model pipeline loaded successfully.
+4.  **Test the API:** Use curl/Postman to send a `POST` request to the `/predict` endpoint.
+
+    **Example using `curl`:**
+    ```bash
+    curl -X POST http://localhost:5000/predict \
+         -H "Content-Type: application/json" \
+         -d '{
+               "learner_avg_completion_rate": 75.5,
+               "course_code": "FIN201"
+             }'
+    ```
+
+    **Input JSON Format:**
+    ```json
+    {
+      "learner_avg_completion_rate": <float (0-100)>,
+      "course_code": "<string>"
+    }
+    ```
+
+    **Example Success Response:**
+    ```json
+    {
+      "message": "Prediction successful.",
+      "prediction": 1,
+      "prediction_label": "Will Complete",
+      "probability_complete": 0.856,
+      "probability_not_complete": 0.144
+    }
+    ```
+
+    **Example Error Response (Invalid Input):**
+    ```json
+    {
+      "error": "Invalid value for 'learner_avg_completion_rate'. Must be between 0 and 100 (inclusive)."
+    }
+    ```
 
 ## 📬 Prediction API Snapshots
 
@@ -91,5 +168,11 @@ The technical assessment analysis covers:
 *   `prediction.py`: Contains the end-to-end workflow for the predictive modeling task: feature engineering, training an XGBoost model (including preprocessing), evaluation, and saving the model artifacts for the API.
 *   `struggle_analysis.py`: Implements the custom Task 8. Calculates video-specific struggle scores based on deviation from average completion and analyzes patterns of significant struggle.
 
-<br>
+## Outputs
+
+*   Key statistics and tables are printed within the `src/assessment.ipynb` notebook.
+*   Interactive plots (EDA, Clustering, Path Optimization, Struggle Analysis) are displayed in the notebook.
+*   Static analysis plots (e.g., silhouette scores) and specific pattern plots are saved to the `output/` directory.
+*   The trained predictive model and preprocessor are saved in `api/models/`.
+*   The prediction API provides real-time completion predictions via the `/predict` endpoint.
 
